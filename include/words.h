@@ -1,4 +1,4 @@
-#include <stdio.h>
+//structure of words in the scanner module
 #define BUFFER_LENGTH 0x1000
 /* 	Character classes: whitespace: /t, /n, /s
  *  	SemiColon
@@ -23,8 +23,8 @@
 */
 /*Open the file. do some error checking, return a file descriptor*/
 
-
-enum Word {
+/* structure of a word: the type, the literal, and the length of the literal*/
+enum enum_wordType {
 	//keywords:
 	INT,
 	CASE,
@@ -74,12 +74,15 @@ enum Word {
 	CURLY_RIGHT
 	SEMICOLON,
 	PERIOD,
+	COMMA,
 	//operators
 	///bitwise operators	
 	BITWISE_OR,
 	BITWISE_AND,
 	BITWISE_XOR,
 	BITWISE_COMPLEMENT,
+	SHIFT_LEFT,
+	SHIFT_RIGHT,
 	////boolean operators
 	BOOLEAN_OR,
 	BOOLEAN_AND,
@@ -92,21 +95,24 @@ enum Word {
 	MOD,
 	////pointer operators
 	DEREF,
-	//identifier specific operators
+	////identifier specific operators
 	ADDRESSOF,
-	
+	ASSIGNMENT,
+	////comparison operators
+	////
+	GREATER_THAN,
+	LESS_THAN,
+	GEQ,
+	LEQ,
+	NEQ,
+	EQUALS,
 	
 };
-struct Moneme {
+typedef enum enum_wordType WordType;
+struct s_Morpheme {
 	char* literal;
 	int length;
-	enum Word speech_type;
+	WordType type;
 };
-
-
-int beginScanning();
-/*return the next block of size BUFFER_LENGTH*/
-char* readBlock();
-/**/
-
+typedef struct s_Morpheme Morpheme;
 

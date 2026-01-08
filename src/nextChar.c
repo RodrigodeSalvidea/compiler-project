@@ -1,6 +1,6 @@
 #include "./nextChar.h"
 #include "../include/logging.h"
-//something odd happened here
+
 
 
 char file_buffer[BUFFER_LENGTH * 2];

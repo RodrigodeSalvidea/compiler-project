@@ -11,6 +11,15 @@
 #define STDERR 1
 #endif
 #define LOG(error_message) (write (STDERR, error_message, strlen(error_message)))
+#define CHECK_MALLOC_ERRORS switch (errno){ \
+	case ENOMEM: \
+		LOG("Allocator is out of memory\n"); \
+		break; \
+	default: \
+		LOG("Allocator failed with unknown error\n"); \
+		break;\
+}\
+
 #define CHECK_WRITE_ERRORS(num_bytes) if (num_bytes < 0 ){ \
 LOG("ERROR writing to output file\n"); \
 switch(errno) { \

@@ -1,10 +1,1 @@
-int main(int argc, char** argv){
-int x[0x100];
-for(int i = 0; i < 0x100; i++){
-	x[i] = i ^ 0b010101010;
-}
-return (int) & x
-}
-
-
-
+( 10 + 10 ) * (10 + 10);

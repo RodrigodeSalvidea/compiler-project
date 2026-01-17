@@ -2,14 +2,15 @@
 #include "./transitions.h"
 #include <string.h>
 #include "matchHexChar.h"
-
+#include "./lineTracker.h"
+#include <stdio.h>
 #ifndef SCANNER_DEFINITIONS
 #define SCANNER_DEFINITIONS
 
 typedef signed char Sign;
 #define POSITIVE 1
 #define NEGATIVE -1
-int scan(int inFD, int outFD, int stringOut);
+int scan( int inFD, FILE *outFile, FILE *stringFile, LineTable *lineTable);
 #define ACCEPTING 0x4000
 enum e_State{
 	STATE_INITIAL = 1,

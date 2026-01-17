@@ -4,7 +4,7 @@
 #include "./transitions.h"
 
 
-int scan(int inFD, int outFD, int stringOut){
+int scan(int inFD, FILE *outFile, FILE *stringFile, LineTable *lineTable){
   char *k_break = "break"; int const breakLen = 5;
   char *k_char = "char"; int const charLen = 4;
   char *k_continue = "continue"; int const continueLen = 8;
@@ -139,6 +139,8 @@ int scan(int inFD, int outFD, int stringOut){
 	case -1:
 		delete_stateStack(stack);
 		return 0;
+	case '\n':
+		nextLine( lineTable );
 	default:
 		if (ALPHA_BIT & t)
 			goto state_accept_name;
@@ -173,14 +175,14 @@ int scan(int inFD, int outFD, int stringOut){
 
 		break;
 	case NAME_TOKEN:
-		write(stringOut, stringBuffer, stringIndex);
+		fwrite( stringBuffer, stringIndex, sizeof(char), stringFile); //stringOut, stringBuffer, stringIndex);
 		m.value.offset = offset;
 		m.size = stringIndex;
 		offset += stringIndex;
 		stringIndex = 0;
 		break;
 	case STRING_TOKEN:
-		write(stringOut, stringBuffer + 1, stringIndex - 1);
+		fwrite(stringBuffer + 1, stringIndex - 1, sizeof(char), stringFile ); //write(stringOut, stringBuffer + 1, stringIndex - 1);
 		m.value.offset = offset;
 		m.size = stringIndex - 1;
 		offset += stringIndex - 1;
@@ -190,8 +192,11 @@ int scan(int inFD, int outFD, int stringOut){
 		stringIndex = 0;
 		m.size = 1;
    }
-	if (m.type != EMPTY_TOKEN)   
-   		write(outFD, &m, sizeof(Monad));
+	if (m.type != EMPTY_TOKEN)  { 
+   		//write(outFD, &m, sizeof(Monad));
+		fwrite( &m, 1, sizeof(Monad), outFile);
+		nextToken(lineTable);
+	}
   goto state_initial;
   //TODO: add keyword states
     //

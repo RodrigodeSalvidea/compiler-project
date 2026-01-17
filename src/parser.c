@@ -70,19 +70,22 @@ void shrinkTree(ParserTreeNode *root){
 		memcpy(root -> children, temp -> children, sizeof(ParserTreeNode*) * root -> numChildren);
 		free(temp);
 	}
-	if ( root -> token -> symbol.nonTerminal == PARSER_UnaryExpressionIII ){
-		free( root -> token );
-		root -> token = root -> children[1] -> token;
-		root -> numChildren = root -> children[1] -> numChildren;
-		temp = root -> children[1];
-		memcpy(root -> children, temp -> children, sizeof(ParserTreeNode*) * root -> numChildren);
-		free(temp);
-	}
 
 }	
-	
 
-ParserTreeNode *makeParseTree( int inFD, int stringsFD ){
+
+void debugStack( ParserStackNode *stack ){
+	if (!stack){
+		return;
+	}
+	debugParseTree(stack -> token, 2);
+	dprintf(2, "------ state %d ------\n", stack -> state);
+	debugStack(stack -> last);
+}
+
+
+
+ParserTreeNode *makeParseTree( FILE *inFile, FILE *stringFile, LineTable *lineTable, ErrorList *errorList ){
 	Monad monad;
 	size_t bytes_read;
 	ParserToken *parserToken;
@@ -97,7 +100,8 @@ ParserTreeNode *makeParseTree( int inFD, int stringsFD ){
 	ParserTreeNode *childNode;
 	ParserState state;
 	Action action;
-
+	int lineNumber;
+	int position;
 
 
 	stack = 0x0;
@@ -107,6 +111,7 @@ ParserTreeNode *makeParseTree( int inFD, int stringsFD ){
 	bool rightIsEmpty;
 
 	rightIsEmpty = true;
+	position = 0;
 
 	
 
@@ -118,10 +123,11 @@ ParserTreeNode *makeParseTree( int inFD, int stringsFD ){
 
 	while ( !(ACCEPT & action) ){
 		if ( rightIsEmpty ){
-			bytes_read = read( inFD, &monad, sizeof(Monad) );	
-			if (bytes_read < sizeof( Monad )){
+			bytes_read = fread(&monad, sizeof( Monad ), 1, inFile);// )// inFD, &monad, sizeof(Monad) );	
+			if (bytes_read <  1){
 				if (bytes_read > 0)
 					LOG("Error reading from input at makeParseStream\n");
+					
 				monad.type = EOF_TOKEN;
 			}
 			if (monad.type == NAME_TOKEN || monad.type == STRING_TOKEN){
@@ -130,19 +136,33 @@ ParserTreeNode *makeParseTree( int inFD, int stringsFD ){
 					check_malloc_errors();
 					return parentNode;
 				}
-				read(stringsFD, stringVal, monad.size);
+				fread(stringVal, sizeof(char), monad.size, stringFile);// ) //stringVal, stringsFD, stringVal, monad.size);
 				stringVal[monad.size] = 0;
 			}
 			parserToken = (ParserToken *) malloc( sizeof(ParserToken) );
 			parserToken -> val.intVal = 0;	
 			makeParserToken( &monad, parserToken, stringVal );
+			lineNumber = nextTokenIndex( lineTable, &position );
 			rightIsEmpty = false;
 		}
 		action = actionTable[ state ][ parserToken -> symbol.terminal ];
 		if (action == UNDEFINED){
-			LOG("Undefined action transition in parser tree");
-			continue;	
-			
+			ErrorInformation ei;
+			ei.error = 0200;
+			ei.message =  "Symbol not expected by parser. Parser can not continue parsing with this symbol in place\n";
+			ei.line = lineNumber;
+			ei.position = position;
+			reportCompilerError(errorList, &ei);
+			//debugParserToken(parserToken);
+		/*:wq
+
+			dprintf(2, "current state: %d\n", state);
+			dprintf(2, "--- %s ---\n", tokenNameTable[ !(parserToken -> isTerminal) ][ parserToken -> symbol.terminal ]);
+			dprintf(2, "stack::\n");
+			debugStack( stack );//debugParseTree(parentNode, 2);
+				*/
+			free( parserToken );
+			return 0x0;
 		}	
 		if (action & SHIFT){
 			parentNode = (ParserTreeNode *) malloc ( sizeof(ParserTreeNode) );
@@ -209,6 +229,19 @@ ParserTreeNode *makeParseTree( int inFD, int stringsFD ){
 }
 
 
+struct s_AbstractSyntaxTree{
+
+
+}
+
+
+AbstractSyntaxTree *makeAST( ParserTreeNode *root){
+
+
+
+
+
+}
 
 
 

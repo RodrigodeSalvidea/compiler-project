@@ -1,5 +1,8 @@
 *.o
+*.d
 parser-data/
 scanner-data/
+sample_code/
 build/
+tests/
 todos.txt
